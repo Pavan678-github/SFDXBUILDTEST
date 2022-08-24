@@ -1,0 +1,56 @@
+# Ant
+# Build your Java projects and run tests with Apache Ant.
+# Add steps that save build artifacts and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+parameters:
+  - name: Source Org
+    displayName: Source Org Salesforce Org
+    values:
+      - dev1
+      - dev2
+  - name: Commit Message
+    displayName: Enter Commit Message
+jobs:
+- job: Run_Package
+  pool:
+    name: Hosted windows 2019 with vs2019
+  steps:
+    - task: PowerShell@2
+      displayName: Checkout Branch
+      inputs:
+        targetType: 'inline'
+        script: |
+          $SourceBranchName - "$(Build.SourceBranch)", Replace('refs/heads/','')
+          Write.Output "##vso[task.setvariable variable=SourceBranchName]$SourceBranchName"
+          git checkout $SourceBranchName     
+
+#trigger:
+#- YourBranchName
+
+#pool:
+#  vmImage: 'ubuntu-latest'
+    - task: Ant@1
+      displayName: Retrieve Metadata
+      inputs:
+        buildFile: 'deploy\build.xml'
+        options: '-Dsf.password=$(sf.password) -Dsf.username=$(sf.username) -Dsf.serverurl=$(sf.serverurl) -Dsf.maxpoll=$(sf.maxpoll) -Dsf.unpackaged=$(sf.unpackaged)'
+        targets: '$(targetname)'
+        publishJUnitResults: false
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.8'
+
+    - task: PowerShell@2
+      displayName: Check in Branch
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "**' starting copying from salesforce to Repo**'"
+          git config --local user.email "$(Build.RequestedForEmail)"
+          git config --local user.name "$(Build.RequestedFor)"
+          git config --local http.extraheader "AUTHORIZATION:bearer $(System.AccessToken)"
+          git add .  
+          git commit -m "${{ parameters.CommitMessage}}"
+          git push origin HEAD:$(SourceBranchName)
+          echo "**All salesforce metadata extract are copied successfull**"
+          
