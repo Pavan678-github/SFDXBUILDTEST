@@ -1,56 +1,73 @@
-# Ant
-# Build your Java projects and run tests with Apache Ant.
-# Add steps that save build artifacts and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+trigger:
+- none
 
-parameters:
-  - name: Source Org
-    displayName: Source Org Salesforce Org
-    values:
-      - dev1
-      - dev2
-  - name: Commit Message
-    displayName: Enter Commit Message
-jobs:
-- job: Run_Package
-  pool:
-    name: Hosted windows 2019 with vs2019
-  steps:
-    - task: PowerShell@2
-      displayName: Checkout Branch
-      inputs:
-        targetType: 'inline'
-        script: |
-          $SourceBranchName - "$(Build.SourceBranch)", Replace('refs/heads/','')
-          Write.Output "##vso[task.setvariable variable=SourceBranchName]$SourceBranchName"
-          git checkout $SourceBranchName     
+pool:
+  vmImage: 'ubuntu-latest'
 
-#trigger:
-#- YourBranchName
+steps:
+- script: |
+    npm install sfdx-cli --location=global
+    sfdx plugins --core
+    sfdx --version
+   #install sfdx-cli
+   # wget -qO- ${DX_CLI_URL_CUSTOM-$CLIURL} | tar xJ -C ~/sfdx --strip-components 1
+    #export PATH=~/sfdx/bin:$PATH
+   # sfdx --version
+    #sfdx plugins --core
 
-#pool:
-#  vmImage: 'ubuntu-latest'
-    - task: Ant@1
-      displayName: Retrieve Metadata
-      inputs:
-        buildFile: 'deploy\build.xml'
-        options: '-Dsf.password=$(sf.password) -Dsf.username=$(sf.username) -Dsf.serverurl=$(sf.serverurl) -Dsf.maxpoll=$(sf.maxpoll) -Dsf.unpackaged=$(sf.unpackaged)'
-        targets: '$(targetname)'
-        publishJUnitResults: false
-        javaHomeOption: 'JDKVersion'
-        jdkVersionOption: '1.8'
 
-    - task: PowerShell@2
-      displayName: Check in Branch
-      inputs:
-        targetType: 'inline'
-        script: |
-          echo "**' starting copying from salesforce to Repo**'"
-          git config --local user.email "$(Build.RequestedForEmail)"
-          git config --local user.name "$(Build.RequestedFor)"
-          git config --local http.extraheader "AUTHORIZATION:bearer $(System.AccessToken)"
-          git add .  
-          git commit -m "${{ parameters.CommitMessage}}"
-          git push origin HEAD:$(SourceBranchName)
-          echo "**All salesforce metadata extract are copied successfull**"
-          
+#- script: |
+    #echo $(authtoken)
+    #echo $(authtoken) > file.txt
+    #echo $(CICDDEVINT_BASE_PACKAGE_AUTH_URL) > file.txt
+    #sfdx auth:sfdxurl:store -a dev -f file.txt
+    #sfdx auth:sfdxurl:store -f file.txt --setalias=dev
+    #sfdx auth:sfdxurl:store -f <path to sfdxAuthUrl file>
+    #sfdx force:auth:sfdxurl:store -f test.txt --setalias=dev
+    #rm -rf file.txt
+  #displayName: authenticate with dev hub
+
+- script: |    
+    echo "Storing auth URL"
+    echo $(CICDDEVINT_BASE_PACKAGE_AUTH_URL) > auth.txt
+    sfdx force:auth:sfdxurl:store -f auth.txt -a devhub --set-default-dev-hub
+    rm -rf file.txt
+  displayName: Authenticating with dev hub
+
+#- script: |
+    #sfdx force:org:create orgName=testorg --definitionfile config/project-scratch-def.json -a dev1 --setdefaultdevhubusername
+  #displayName: Scratchorg creation 
+- script: |     
+    echo "Printing the directort content"
+    ls -l
+    echo "Printing current directory path"
+    pwd
+    echo "Creating scratch org"
+    sfdx force:org:create orgName=CICDOrg -f config/project-scratch-def.json -w 120 -n --durationdays 1 -a CICDOrg -s username=testupdate123@example.com
+  displayName: Creating scratch org
+
+- script: |
+    echo "password creation"
+    sfdx force:user:password:generate --targetusername testupdate123@example.com
+  displayName: Creating Password
+
+
+- script: |          
+   echo "pulling source code"
+   sfdx force:source:pull -u testupdate123@example.com 
+
+
+   
+    
+  displayName: Pushing source code
+
+- script: |
+    sfdx org:list
+  displayName: org list 
+
+- script: |
+      #if: always()
+      #echo "Deleting scratch org"
+      #sfdx org:delete:scratch -o CICDOrg -p
+  #displayName: Deleting the scratch org
+
