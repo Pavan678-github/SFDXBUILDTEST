@@ -43,7 +43,7 @@ steps:
     echo "Printing current directory path"
     pwd
     echo "Creating scratch org"
-    sfdx force:org:create orgName=CICDOrg -w 120 -n --durationdays 1 -a CICDOrg -s username=testupdate123@example.com
+    sfdx force:org:create orgName=CICDOrg -w 120 -n --durationdays 1 -a CICDOrg -s username=testupdate123@example.com edition=Developer
   displayName: Creating scratch org
 
 - script: |
