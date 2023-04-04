@@ -52,10 +52,10 @@ steps:
   #displayName: Creating Password
 
 
-#- script: |          
-   #echo "pulling source code"
-   #sfdx force:source:pull -u testRaj123457@example.com
-  #displayName: Pulling from Scratch org
+- script: |          
+   echo "pulling source code"
+   sfdx force:source:push -u testRaj123457@example.com
+  displayName: Push to Scratch org
 
 
    
