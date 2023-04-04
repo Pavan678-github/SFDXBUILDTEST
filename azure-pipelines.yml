@@ -52,10 +52,10 @@ steps:
   #displayName: Creating Password
 
 
-- script: |          
-   echo "pulling source code"
-   sfdx force:source:pull -u testRaj123456@example.com
-  displayName: Pulling from Scratch org
+#- script: |          
+   #echo "pulling source code"
+   #sfdx force:source:pull -u testRaj123456@example.com
+  #displayName: Pulling from Scratch org
 
 
    
@@ -68,7 +68,7 @@ steps:
 
 - script: |
       #if: always()
-      #echo "Deleting scratch org"
-      #sfdx org:delete:scratch -o CICDOrg -p
-  #displayName: Deleting the scratch org
+      echo "Deleting scratch org"
+      sfdx org:delete:scratch -o CICDOrg -p
+  displayName: Deleting the scratch org
 
