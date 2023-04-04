@@ -43,23 +43,23 @@ steps:
     echo "Printing current directory path"
     pwd
     echo "Creating scratch org"
-    sfdx force:org:create orgName=CICDOrg -w 120 -n --durationdays 1 -a CICDOrg -s username=testupdate123@example.com edition=Developer
+    sfdx force:org:create orgName=CICDOrg -w 120 -n --durationdays 1 -a CICDOrg -s username=testlatest123@example.com edition=Developer
   displayName: Creating scratch org
 
 - script: |
     echo "password creation"
-    sfdx force:user:password:generate --targetusername testupdate123@example.com
+    sfdx force:user:password:generate --targetusername testlatest123@example.com
   displayName: Creating Password
 
 
 - script: |          
    echo "pulling source code"
-   sfdx force:source:pull -u testupdate123@example.com 
+   sfdx force:source:pull -u testlatest123@example.com 
 
 
    
     
-  displayName: Pushing source code
+  #displayName: Pushing source code
 
 - script: |
     sfdx org:list
