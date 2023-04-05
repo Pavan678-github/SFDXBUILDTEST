@@ -5,70 +5,15 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: |
-    npm install sfdx-cli --location=global
-    sfdx plugins --core
-    sfdx --version
-   #install sfdx-cli
-   # wget -qO- ${DX_CLI_URL_CUSTOM-$CLIURL} | tar xJ -C ~/sfdx --strip-components 1
-    #export PATH=~/sfdx/bin:$PATH
-   # sfdx --version
-    #sfdx plugins --core
+  # Sets FOO to be "some value" in the script and the next ones
+  - bash: |
+      FOO="runtime value"
+      echo "##vso[task.setvariable variable=FOO]$FOO"
 
+  # Using the $() syntax during "compile time", the pipeline expands the variable
+  - bash: |
+      echo "$(FOO)"
 
-#- script: |
-    #echo $(authtoken)
-    #echo $(authtoken) > file.txt
-    #echo $(CICDDEVINT_BASE_PACKAGE_AUTH_URL) > file.txt
-    #sfdx auth:sfdxurl:store -a dev -f file.txt
-    #sfdx auth:sfdxurl:store -f file.txt --setalias=dev
-    #sfdx auth:sfdxurl:store -f <path to sfdxAuthUrl file>
-    #sfdx force:auth:sfdxurl:store -f test.txt --setalias=dev
-    #rm -rf file.txt
-  #displayName: authenticate with dev hub
-
-- script: |    
-    echo "Storing auth URL"
-    echo $(CICDDEVINT_BASE_PACKAGE_AUTH_URL) > auth.txt
-    sfdx force:auth:sfdxurl:store -f auth.txt -a devhub --set-default-dev-hub
-    rm -rf file.txt
-  displayName: Authenticating with dev hub
-
-#- script: |
-    #sfdx force:org:create orgName=testorg --definitionfile config/project-scratch-def.json -a dev1 --setdefaultdevhubusername
-  #displayName: Scratchorg creation 
-- script: |     
-    echo "Printing the directort content"
-    ls -l
-    echo "Printing current directory path"
-    pwd
-    echo "Creating scratch org"
-    sfdx force:org:create orgName=CICDOrg -w 120 -n --durationdays 1 -a CICDOrg -s username=testRaj123458@example.com edition=Developer
-  displayName: Creating scratch org
-
-#- script: |
-    #echo "password creation"
-    #sfdx force:user:password:generate --targetusername testRaj123458@example.com
-  #displayName: Creating Password
-
-
-- script: |          
-   echo "pulling source code"
-   sfdx force:source:push -u testRaj123458@example.com
-  displayName: Push to Scratch org
-
-
-   
-    
-  #displayName: Pushing source code
-
-- script: |
-    sfdx org:list
-  displayName: org list 
-
-- script: |
-      #if: always()
-      echo "Deleting scratch org"
-      sfdx org:delete:scratch -o CICDOrg -p
-  displayName: Deleting the scratch org
-
+  # Using an environment variable in the script context at "runtime", bash expands the variable
+  - bash: |
+      echo "$FOO"
