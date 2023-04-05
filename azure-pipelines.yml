@@ -4,11 +4,6 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-
-steps:
-- script: |
-    - task: PowerShell@2
-      inputs:
 - script: |
     npm install sfdx-cli --location=global
     sfdx plugins --core
